@@ -2,5 +2,6 @@
 Dieses Projekt wird umgesetzt von:
 - [Luka Sola](https://github.com/Soluk-GBS)
 - [Leandro Graf](https://github.com/Leandro-gbs)
+<br>
 - Stefan Kauflin
 
