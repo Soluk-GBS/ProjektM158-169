@@ -15,6 +15,3 @@
 | Stefan Kauflin | Technischer Analyst |
  
 ---
-
-> Konfigurationsdateien folgen in der Realisierungsphase.
- 
