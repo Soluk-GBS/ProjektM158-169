@@ -22,7 +22,7 @@
 |---|---|
 | [Luka Sola](https://github.com/luka-sola) | Projektleiter |
 | [Leandro Graf](https://github.com/Leandro-gbs) | Protokollführer |
-| Stefan Kauflin | Technischer Analyst |
+| [Stefan Kauflin](https://github.com/MrKringel76)| Technischer Analyst |
 
 ---
 
