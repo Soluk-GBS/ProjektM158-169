@@ -1,5 +1,7 @@
 <div align="center">
 
+![header](https://capsule-render.vercel.app/api?type=waving&color=3B82F6&height=120&section=header)
+
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=3B82F6&center=true&vCenter=true&width=600&lines=ProjektM158-169;Moodle+Migration+%F0%9F%90%B3;GBS+St.Gallen)](https://git.io/typing-svg)
 
 </div>
@@ -46,5 +48,7 @@ ProjektM158-169/
 ![Moodle](https://img.shields.io/badge/Moodle-F98012?style=for-the-badge&logo=moodle&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+
+![footer](https://capsule-render.vercel.app/api?type=waving&color=3B82F6&height=80&section=footer)
 
 </div>
