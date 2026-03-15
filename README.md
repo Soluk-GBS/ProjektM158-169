@@ -10,7 +10,7 @@
  
 | Name | Rolle |
 |---|---|
-| [Luka Sola](https://github.com/luka-sola) | Projektleiter |
+| [Luka Sola](https://github.com/Soluk-GBS) | Projektleiter |
 | [Leandro Graf](https://github.com/Leandro-gbs) | Protokollführer |
 | Stefan Kauflin | Technischer Analyst |
  
