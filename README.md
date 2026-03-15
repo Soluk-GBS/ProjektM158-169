@@ -1,17 +1,50 @@
-# ProjektM158-169
- 
+<div align="center">
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=3B82F6&center=true&vCenter=true&width=600&lines=ProjektM158-169;Moodle+Migration+%F0%9F%90%B3;GBS+St.Gallen)](https://git.io/typing-svg)
+
+</div>
+
+<div align="center">
+
 > Migration einer veralteten Moodle-Instanz auf die aktuelle Version als Docker-Container.
- 
+
 **Modul 158/169 – GBS St.Gallen**
- 
+
+</div>
+
 ---
- 
-## Team
- 
+
+## 👥 Team
+
 | Name | Rolle |
 |---|---|
-| [Luka Sola](https://github.com/Soluk-GBS) | Projektleiter |
+| [Luka Sola](https://github.com/luka-sola) | Projektleiter |
 | [Leandro Graf](https://github.com/Leandro-gbs) | Protokollführer |
 | Stefan Kauflin | Technischer Analyst |
- 
+
 ---
+
+## 📁 Inhalt
+
+```
+ProjektM158-169/
+├── docker/
+│   ├── Dockerfile          # Moodle Image
+│   └── docker-compose.yml  # Alt (Port 8080) + Neu (Port 80)
+├── docs/
+│   └── Lastenheft.docx
+└── README.md
+```
+
+> Konfigurationsdateien folgen in der Realisierungsphase.
+
+---
+
+<div align="center">
+
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Moodle](https://img.shields.io/badge/Moodle-F98012?style=for-the-badge&logo=moodle&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+
+</div>
