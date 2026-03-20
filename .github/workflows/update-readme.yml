@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   update-readme:
     runs-on: ubuntu-latest
@@ -12,33 +15,25 @@ jobs:
     steps:
       - name: Repository auschecken
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Ordnerstruktur generieren
+      - name: Ordnerstruktur generieren und README updaten
         run: |
-          echo "Generiere Ordnerstruktur..."
-          TREE=$(find . \
-            -not -path './.git/*' \
-            -not -path './.github/*' \
-            -not -name '.gitignore' \
-            | sort \
-            | sed 's|[^/]*/|  |g' \
-            | sed 's|  \([^/]*\)$|└── \1|')
-
-          # Zwischen den Markierungen im README ersetzen
           python3 - <<'EOF'
           import re
-
-          with open("README.md", "r", encoding="utf-8") as f:
-              content = f.read()
-
           import subprocess
+
           result = subprocess.run(
-              ["find", ".", "-not", "-path", "./.git/*", "-not", "-path", "./.github/*", "-not", "-name", ".gitignore"],
+              ["find", ".", "-not", "-path", "./.git/*", "-not", "-path", "./.github/*"],
               capture_output=True, text=True
           )
 
           lines = sorted(result.stdout.strip().split("\n"))
           tree = "\n".join(lines)
+
+          with open("README.md", "r", encoding="utf-8") as f:
+              content = f.read()
 
           new_block = f"<!-- TREE_START -->\n```\n{tree}\n```\n<!-- TREE_END -->"
 
@@ -61,4 +56,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
           git diff --cached --quiet || git commit -m "chore: Ordnerstruktur automatisch aktualisiert"
-          git push
+          git push origin main
