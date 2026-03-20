@@ -30,7 +30,18 @@
 
 <!-- TREE_START -->
 ```
-wird automatisch befüllt
+.
+./.git
+./.github
+./README.md
+./miniprojekt
+./miniprojekt/Leandro's Miniprojekt
+./miniprojekt/Leandro's Miniprojekt/README.md
+./miniprojekt/Luka's Miniprojekt
+./miniprojekt/Luka's Miniprojekt/README.md
+./miniprojekt/Luka's Miniprojekt/m169-miniprojekt.zip
+./miniprojekt/Stefan's Miniprojekt
+./miniprojekt/Stefan's Miniprojekt/README.md
 ```
 <!-- TREE_END -->
 
