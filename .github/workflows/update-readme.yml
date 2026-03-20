@@ -18,6 +18,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Tree installieren
+        run: sudo apt-get install -y tree
+
       - name: Ordnerstruktur generieren und README updaten
         run: |
           python3 - <<'EOF'
@@ -25,12 +28,11 @@ jobs:
           import subprocess
 
           result = subprocess.run(
-              ["find", ".", "-not", "-path", "./.git/*", "-not", "-path", "./.github/*"],
+              ["tree", "--noreport", "-I", ".git"],
               capture_output=True, text=True
           )
 
-          lines = sorted(result.stdout.strip().split("\n"))
-          tree = "\n".join(lines)
+          tree = result.stdout.strip()
 
           with open("README.md", "r", encoding="utf-8") as f:
               content = f.read()
