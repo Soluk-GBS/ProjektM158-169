@@ -43,17 +43,6 @@
 ```
 <!-- TREE_END -->
 
-
-```
-ProjektM158-169/
-├── docker/
-│   ├── Dockerfile          # Moodle Image
-│   └── docker-compose.yml  # Alt (Port 8080) + Neu (Port 80)
-├── docs/
-│   └── Lastenheft.docx
-└── README.md
-```
-
 > Konfigurationsdateien folgen in der Realisierungsphase.
 
 ---
