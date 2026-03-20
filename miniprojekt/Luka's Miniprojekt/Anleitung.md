@@ -21,7 +21,7 @@
 PowerShell oder CMD öffnen:
  
 ```powershell
-git clone https://github.com/<dein-username>/m169-miniprojekt.git
+git clone https://github.com/Soluk-GBS/ProjektM158-169
 cd m169-miniprojekt
 ```
  
