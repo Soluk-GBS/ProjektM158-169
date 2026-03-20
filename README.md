@@ -31,17 +31,15 @@
 <!-- TREE_START -->
 ```
 .
-./.git
-./.github
-./README.md
-./miniprojekt
-./miniprojekt/Leandro's Miniprojekt
-./miniprojekt/Leandro's Miniprojekt/README.md
-./miniprojekt/Luka's Miniprojekt
-./miniprojekt/Luka's Miniprojekt/README.md
-./miniprojekt/Luka's Miniprojekt/m169-miniprojekt.zip
-./miniprojekt/Stefan's Miniprojekt
-./miniprojekt/Stefan's Miniprojekt/README.md
+├── README.md
+└── miniprojekt
+    ├── Leandro's Miniprojekt
+    │   └── README.md
+    ├── Luka's Miniprojekt
+    │   ├── README.md
+    │   └── m169-miniprojekt.zip
+    └── Stefan's Miniprojekt
+        └── README.md
 ```
 <!-- TREE_END -->
 
