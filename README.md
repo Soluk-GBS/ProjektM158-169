@@ -34,7 +34,8 @@
 ├── README.md
 └── miniprojekt
     ├── Leandro's Miniprojekt
-    │   └── README.md
+    │   ├── README.md
+    │   └── miniprojekt.zip
     ├── Luka's Miniprojekt
     │   ├── README.md
     │   └── m169-miniprojekt.zip
