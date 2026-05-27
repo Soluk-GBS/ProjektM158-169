@@ -46,7 +46,9 @@
 │   └── test
 ├── scripts
 │   └── test
-└── setup.sh
+├── setup.sh
+└── {moodle,db,scripts,docs}
+    └── test
 ```
 <!-- TREE_END -->
 
