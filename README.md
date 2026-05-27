@@ -43,7 +43,9 @@
 │   └── Stefan's Miniprojekt
 │       └── README.md
 ├── moodle
-│   └── test
+│   ├── Dockerfile
+│   ├── config.php
+│   └── moodle.conf
 ├── scripts
 │   └── test
 ├── setup.sh
