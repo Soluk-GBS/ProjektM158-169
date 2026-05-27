@@ -1,49 +1,26 @@
 #!/bin/bash
 # =======================================================
 #  setup.sh – Moodle Migration | CloudForge AG
-#  Modul 158/169 | GBS St.Gallen
+#  Modul 158/169 | GBS St.Gallen | 2026
 #
-#  Dieses Script macht ALLES automatisch:
-#    1. Docker + Git installieren (falls nötig)
-#    2. Repository klonen
-#    3. .env erstellen
-#    4. Docker-Image bauen (Moodle per git clone)
-#    5. Alte Instanz auf Port 8080 verschieben
-#    6. Daten migrieren (DB-Dump + moodledata)
-#    7. Neue Instanz auf Port 80 starten
-#    8. Warnbanner auf alte Instanz setzen
-#
-#  Ausführen (auf der VM, einmalig):
-#    curl -fsSL https://raw.githubusercontent.com/Soluk-GBS/ProjektM158-169/main/setup.sh | bash
-#  ODER:
+#  Einfach starten – alles läuft automatisch durch:
 #    bash setup.sh
-#
-#  Voraussetzung: Ubuntu 20.04 / 22.04 LTS, sudo-Rechte
 # =======================================================
 
 set -e
 
-# -------------------------------------------------------
-# Farben & Hilfsfunktionen
-# -------------------------------------------------------
-C_GREEN='\033[0;32m'
-C_YELLOW='\033[1;33m'
-C_CYAN='\033[0;36m'
-C_RED='\033[0;31m'
-C_BOLD='\033[1m'
-C_NC='\033[0m'
+C_GREEN='\033[0;32m'; C_YELLOW='\033[1;33m'
+C_CYAN='\033[0;36m'; C_RED='\033[0;31m'
+C_BOLD='\033[1m'; C_NC='\033[0m'
 
 REPO_URL="https://github.com/Soluk-GBS/ProjektM158-169.git"
 REPO_DIR="$HOME/ProjektM158-169"
 
-step()    { echo -e "\n${C_CYAN}${C_BOLD}━━━ $1 ━━━${C_NC}"; }
-ok()      { echo -e "  ${C_GREEN}✔ $1${C_NC}"; }
-info()    { echo -e "  ${C_YELLOW}→ $1${C_NC}"; }
-err()     { echo -e "\n${C_RED}✘ FEHLER: $1${C_NC}\n"; exit 1; }
-ask()     { echo -e "  ${C_BOLD}$1${C_NC}"; }
+step() { echo -e "\n${C_CYAN}${C_BOLD}━━━ $1 ━━━${C_NC}"; }
+ok()   { echo -e "  ${C_GREEN}✔ $1${C_NC}"; }
+info() { echo -e "  ${C_YELLOW}→ $1${C_NC}"; }
+err()  { echo -e "\n${C_RED}✘ FEHLER: $1${C_NC}\n"; exit 1; }
 
-# -------------------------------------------------------
-# Banner
 # -------------------------------------------------------
 clear
 echo -e "${C_CYAN}${C_BOLD}"
@@ -52,297 +29,222 @@ echo "  ║   Moodle Migration Setup · CloudForge AG    ║"
 echo "  ║   Modul 158/169 · GBS St.Gallen · 2026      ║"
 echo "  ╚══════════════════════════════════════════════╝"
 echo -e "${C_NC}"
-echo "  Dieses Script richtet die komplette Moodle-Migration"
-echo "  automatisch ein. Dauer: ca. 10–20 Minuten."
+echo "  Vollautomatische Migration – kein Eingriff nötig."
 echo ""
 
-# -------------------------------------------------------
-# Sudo-Check
-# -------------------------------------------------------
-if ! sudo -n true 2>/dev/null; then
-    info "Sudo-Passwort wird benötigt (einmalig):"
-    sudo -v || err "Kein sudo-Zugriff. Script als User mit sudo-Rechten ausführen."
-fi
+# Sudo cachen
+sudo -v
 
 # -------------------------------------------------------
-step "SCHRITT 1 · Abhängigkeiten prüfen & installieren"
+step "SCHRITT 1 · Abhängigkeiten"
 # -------------------------------------------------------
-
-# Git
-if ! command -v git &>/dev/null; then
-    info "Git wird installiert..."
-    sudo apt-get update -qq && sudo apt-get install -y -qq git
-    ok "Git installiert: $(git --version)"
-else
-    ok "Git vorhanden: $(git --version)"
-fi
-
-# Docker
-if ! command -v docker &>/dev/null; then
-    info "Docker wird installiert..."
-    curl -fsSL https://get.docker.com | sudo sh
-    sudo usermod -aG docker "$USER"
-    ok "Docker installiert"
-    info "WICHTIG: Nach dem Script einmal aus- und einloggen (oder 'newgrp docker')."
-    USE_SUDO_DOCKER="sudo"
-else
-    ok "Docker vorhanden: $(docker --version)"
-    USE_SUDO_DOCKER=""
-fi
-
-# Docker Compose v2
-if ! docker compose version &>/dev/null 2>&1; then
-    info "Docker Compose v2 wird installiert..."
-    sudo apt-get install -y -qq docker-compose-plugin 2>/dev/null || \
-    sudo curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64" \
-        -o /usr/local/lib/docker/cli-plugins/docker-compose && \
-    sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-    ok "Docker Compose installiert"
-else
-    ok "Docker Compose vorhanden: $(docker compose version)"
-fi
+command -v git    &>/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq git; }
+command -v docker &>/dev/null || { curl -fsSL https://get.docker.com | sudo sh; sudo usermod -aG docker "$USER"; }
+docker compose version &>/dev/null || sudo apt-get install -y -qq docker-compose-plugin
+ok "Git:    $(git --version)"
+ok "Docker: $(docker --version | cut -d' ' -f3 | tr -d ',')"
 
 # -------------------------------------------------------
-step "SCHRITT 2 · Repository klonen"
+step "SCHRITT 2 · Repository"
 # -------------------------------------------------------
-
 if [ -d "$REPO_DIR/.git" ]; then
-    info "Repository bereits vorhanden, aktualisiere..."
-    git -C "$REPO_DIR" pull --quiet
-    ok "Repository aktuell: $REPO_DIR"
+    git -C "$REPO_DIR" pull --quiet && ok "Repository aktuell"
 else
-    info "Klone Repository von GitHub..."
-    git clone "$REPO_URL" "$REPO_DIR"
-    ok "Repository geklont: $REPO_DIR"
+    git clone "$REPO_URL" "$REPO_DIR" && ok "Repository geklont"
 fi
-
 cd "$REPO_DIR"
 
 # -------------------------------------------------------
-step "SCHRITT 3 · Konfiguration (.env)"
+step "SCHRITT 3 · Alte Moodle-Installation finden"
 # -------------------------------------------------------
 
-if [ -f ".env" ]; then
-    ok ".env bereits vorhanden – wird verwendet."
-    set -a; source .env; set +a
+# Moodle-Verzeichnis automatisch finden
+OLD_MOODLE_DIR=""
+for candidate in /var/www/html/moodle /var/www/html /var/www/moodle /opt/moodle; do
+    if [ -f "$candidate/config.php" ] && grep -q "moodle" "$candidate/config.php" 2>/dev/null; then
+        OLD_MOODLE_DIR="$candidate"
+        break
+    fi
+done
+[ -n "$OLD_MOODLE_DIR" ] || err "Moodle nicht gefunden. Bitte Pfad manuell in setup.sh setzen."
+ok "Moodle gefunden: $OLD_MOODLE_DIR"
+
+# moodledata automatisch finden
+OLD_MOODLE_DATA=""
+# 1. Aus config.php lesen
+DATA_FROM_CFG=$(sudo grep -oP "dataroot\s*=\s*['\"]?\K[^'\";\s]+" "$OLD_MOODLE_DIR/config.php" 2>/dev/null || true)
+if [ -n "$DATA_FROM_CFG" ] && [ -d "$DATA_FROM_CFG" ]; then
+    OLD_MOODLE_DATA="$DATA_FROM_CFG"
 else
-    echo ""
-    ask "Bitte Datenbankpasswörter festlegen:"
-    echo "  (Einfach Enter drücken für Standardwerte)"
-    echo ""
-
-    read -p "  DB Root-Passwort    [Standard: MoodleRoot2026!]: " INPUT_ROOT
-    read -p "  DB User-Passwort    [Standard: MoodleUser2026!]: " INPUT_PASS
-    read -p "  DB Name             [Standard: moodle]:           " INPUT_NAME
-    read -p "  DB User             [Standard: moodle]:           " INPUT_USER
-
-    DB_ROOT_PASS="${INPUT_ROOT:-MoodleRoot2026!}"
-    DB_PASS="${INPUT_PASS:-MoodleUser2026!}"
-    DB_NAME="${INPUT_NAME:-moodle}"
-    DB_USER="${INPUT_USER:-moodle}"
-
-    cat > .env << EOF
-DB_ROOT_PASS=${DB_ROOT_PASS}
-DB_NAME=${DB_NAME}
-DB_USER=${DB_USER}
-DB_PASS=${DB_PASS}
-EOF
-    ok ".env erstellt"
-    export DB_ROOT_PASS DB_NAME DB_USER DB_PASS
+    # 2. Bekannte Pfade prüfen
+    for candidate in /var/www/moodledata /var/moodledata /var/www/html/moodledata; do
+        if [ -d "$candidate" ]; then
+            OLD_MOODLE_DATA="$candidate"
+            break
+        fi
+    done
 fi
+[ -n "$OLD_MOODLE_DATA" ] || err "moodledata nicht gefunden."
+ok "moodledata gefunden: $OLD_MOODLE_DATA"
+
+# DB-Name aus config.php lesen
+OLD_DB_NAME=$(sudo grep -oP "dbname\s*=\s*['\"]?\K[^'\";\s]+" "$OLD_MOODLE_DIR/config.php" 2>/dev/null || echo "moodle")
+ok "Datenbank: $OLD_DB_NAME"
 
 # -------------------------------------------------------
-step "SCHRITT 4 · Modus wählen"
+step "SCHRITT 4 · .env erstellen"
 # -------------------------------------------------------
-
-echo ""
-ask "Was soll gemacht werden?"
-echo "  [1] Komplette Migration (alte Moodle-Daten übernehmen)  ← Standard"
-echo "  [2] Nur neue Moodle-Instanz aufsetzen (Frischinstall)"
-echo ""
-read -p "  Auswahl [1/2, Standard=1]: " MODE_INPUT
-MODE="${MODE_INPUT:-1}"
+if [ ! -f ".env" ]; then
+cat > .env << EOF
+DB_ROOT_PASS=MoodleRoot2026!
+DB_NAME=moodle
+DB_USER=moodle
+DB_PASS=MoodleUser2026!
+EOF
+    ok ".env mit Standardwerten erstellt"
+else
+    ok ".env bereits vorhanden"
+fi
+set -a; source .env; set +a
 
 # -------------------------------------------------------
 step "SCHRITT 5 · Docker-Image bauen"
 # -------------------------------------------------------
-
-info "Baue Moodle-Docker-Image (Moodle wird via git geklont)..."
-info "Das dauert beim ersten Mal ~5–10 Minuten..."
-$USE_SUDO_DOCKER docker compose build --no-cache
-ok "Docker-Image erfolgreich gebaut"
+info "Moodle-Docker-Image wird gebaut (ca. 5–10 Min)..."
+docker compose build
+ok "Docker-Image gebaut"
 
 # -------------------------------------------------------
-# Modus 1: Migration
+step "SCHRITT 6 · Datenbank-Dump erstellen"
 # -------------------------------------------------------
-if [ "$MODE" = "1" ]; then
+mkdir -p db
+info "Erstelle mysqldump von: $OLD_DB_NAME"
+sudo mysqldump --single-transaction "$OLD_DB_NAME" > db/dump_alt.sql
+ok "Dump erstellt: $(du -sh db/dump_alt.sql | cut -f1)"
 
-    step "SCHRITT 6 · Alte Moodle-Instanz konfigurieren"
+# -------------------------------------------------------
+step "SCHRITT 7 · moodledata sichern"
+# -------------------------------------------------------
+info "Kopiere $OLD_MOODLE_DATA..."
+[ -d db/moodledata_backup ] && sudo rm -rf db/moodledata_backup
+sudo cp -r "$OLD_MOODLE_DATA" db/moodledata_backup
+ok "moodledata gesichert"
 
-    # Pfade erfragen
-    echo ""
-    ask "Pfad zur alten Moodle-Installation?"
-    read -p "  [Standard: /var/www/html/moodle]: " INPUT_MOODLE_DIR
-    OLD_MOODLE_DIR="${INPUT_MOODLE_DIR:-/var/www/html/moodle}"
+# -------------------------------------------------------
+step "SCHRITT 8 · Schrittweises DB-Upgrade (3.10 → 4.5)"
+# -------------------------------------------------------
+MOODLEDATA_TMP="/tmp/moodledata_migration"
+[ -d "$MOODLEDATA_TMP" ] && rm -rf "$MOODLEDATA_TMP"
+mkdir -p "$MOODLEDATA_TMP" && chmod 0777 "$MOODLEDATA_TMP"
+sudo cp -r "$OLD_MOODLE_DATA/." "$MOODLEDATA_TMP/"
 
-    ask "Pfad zum moodledata-Verzeichnis?"
-    read -p "  [Standard: /var/moodledata]: " INPUT_MOODLE_DATA
-    OLD_MOODLE_DATA="${INPUT_MOODLE_DATA:-/var/www/moodledata}"
+info "Starte temporäre MariaDB..."
+docker network create moodle_upgrade_net 2>/dev/null || true
+docker rm -f moodle_upgrade_db 2>/dev/null || true
+docker run -d \
+    --name moodle_upgrade_db \
+    --network moodle_upgrade_net \
+    -e MARIADB_ROOT_PASSWORD=upgradepass \
+    -e MARIADB_DATABASE="$OLD_DB_NAME" \
+    -e MARIADB_USER=moodle \
+    -e MARIADB_PASSWORD=upgradepass \
+    mariadb:10.6
+info "Warte auf MariaDB (30s)..."
+sleep 30
 
-    ask "Name der alten Moodle-Datenbank?"
-    read -p "  [Standard: moodle]: " INPUT_OLD_DB
-    OLD_DB_NAME="${INPUT_OLD_DB:-moodle}"
+info "Importiere alten Dump..."
+docker exec -i moodle_upgrade_db mariadb \
+    -uroot -pupgradepass "$OLD_DB_NAME" < db/dump_alt.sql
+ok "Dump importiert"
 
-    # Pfade prüfen
-    [ -d "$OLD_MOODLE_DIR" ]  || err "Moodle-Verzeichnis nicht gefunden: $OLD_MOODLE_DIR"
-    [ -d "$OLD_MOODLE_DATA" ] || err "moodledata nicht gefunden: $OLD_MOODLE_DATA"
-
-    mkdir -p db
-
-    # ----
-    step "SCHRITT 7 · Datenbank-Dump erstellen"
-    # ----
-    info "Erstelle mysqldump von: $OLD_DB_NAME"
-    sudo mysqldump --single-transaction "$OLD_DB_NAME" > db/dump_alt.sql
-    DUMP_SIZE=$(du -sh db/dump_alt.sql | cut -f1)
-    ok "Dump erstellt (${DUMP_SIZE}): db/dump_alt.sql"
-
-    # ----
-    step "SCHRITT 8 · moodledata sichern"
-    # ----
-    info "Kopiere moodledata..."
-    sudo cp -r "$OLD_MOODLE_DATA" db/moodledata_backup
-    ok "moodledata gesichert: db/moodledata_backup/"
-
-    # ----
-    step "SCHRITT 9 · Schrittweises DB-Schema-Upgrade (3.10 → 4.5)"
-    # ----
-    info "Starte temporäre Upgrade-Umgebung..."
-
-    MOODLEDATA_TMP="/tmp/moodledata_migration"
-    mkdir -p "$MOODLEDATA_TMP" && chmod 0777 "$MOODLEDATA_TMP"
-    sudo cp -r "$OLD_MOODLE_DATA/." "$MOODLEDATA_TMP/"
-
-    $USE_SUDO_DOCKER docker network create moodle_upgrade_net 2>/dev/null || true
-
-    $USE_SUDO_DOCKER docker rm -f moodle_upgrade_db 2>/dev/null || true
-    $USE_SUDO_DOCKER docker run -d \
-        --name moodle_upgrade_db \
+do_upgrade() {
+    local VERSION=$1 PHP=$2 BRANCH=$3
+    info "Upgrade → Moodle $VERSION..."
+    rm -rf /tmp/moodle_upgrade
+    git clone --depth 1 --branch "$BRANCH" \
+        https://github.com/moodle/moodle.git /tmp/moodle_upgrade 2>/dev/null
+    cp scripts/config_migration.php /tmp/moodle_upgrade/config.php
+    chmod -R 0777 /tmp/moodle_upgrade
+    docker run --rm \
         --network moodle_upgrade_net \
-        -e MARIADB_ROOT_PASSWORD=upgradepass \
-        -e MARIADB_DATABASE="$OLD_DB_NAME" \
-        -e MARIADB_USER=moodle \
-        -e MARIADB_PASSWORD=upgradepass \
-        mariadb:10.6
+        -v /tmp/moodle_upgrade:/var/www/html/moodle \
+        -v "$MOODLEDATA_TMP":/var/moodledata \
+        -e MOODLE_DB_HOST=moodle_upgrade_db \
+        -e MOODLE_DB_NAME="$OLD_DB_NAME" \
+        -e MOODLE_DB_USER=moodle \
+        -e MOODLE_DB_PASS=upgradepass \
+        moodlehq/moodle-php-apache:"$PHP" \
+        su -s /bin/bash www-data -c \
+        "php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive"
+    rm -rf /tmp/moodle_upgrade
+    ok "Moodle $VERSION ✔"
+}
 
-    info "Warte auf temporäre MariaDB (30s)..."
-    sleep 30
+do_upgrade "4.1" "8.0" "MOODLE_401_STABLE"
+do_upgrade "4.4" "8.1" "MOODLE_404_STABLE"
+do_upgrade "4.5" "8.3" "MOODLE_405_STABLE"
 
-    info "Importiere alten Dump..."
-    $USE_SUDO_DOCKER docker exec -i moodle_upgrade_db \
-        mariadb -uroot -pupgradepass "$OLD_DB_NAME" < db/dump_alt.sql
-    ok "Dump importiert"
+info "Exportiere migrierten Dump..."
+docker exec moodle_upgrade_db mysqldump \
+    -uroot -pupgradepass "$OLD_DB_NAME" > db/dump_migriert.sql
+ok "Migrierter Dump: $(du -sh db/dump_migriert.sql | cut -f1)"
 
-    # Upgrade-Funktion
-    do_upgrade() {
-        local VERSION=$1 PHP=$2 BRANCH=$3
-        info "Upgrade: Moodle $VERSION (PHP $PHP)..."
-        rm -rf /tmp/moodle_upgrade
-        git clone --depth 1 --branch "$BRANCH" \
-            https://github.com/moodle/moodle.git /tmp/moodle_upgrade 2>/dev/null
-        cp scripts/config_migration.php /tmp/moodle_upgrade/config.php
-        chmod -R 0777 /tmp/moodle_upgrade
-        $USE_SUDO_DOCKER docker run --rm \
-            --network moodle_upgrade_net \
-            -v /tmp/moodle_upgrade:/var/www/html/moodle \
-            -v "$MOODLEDATA_TMP":/var/moodledata \
-            -e MOODLE_DB_HOST=moodle_upgrade_db \
-            -e MOODLE_DB_NAME="$OLD_DB_NAME" \
-            -e MOODLE_DB_USER=moodle \
-            -e MOODLE_DB_PASS=upgradepass \
-            moodlehq/moodle-php-apache:"$PHP" \
-            su -s /bin/bash www-data -c \
-            "php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive"
-        rm -rf /tmp/moodle_upgrade
-        ok "Upgrade auf $VERSION abgeschlossen"
-    }
-
-    do_upgrade "4.1" "8.0" "MOODLE_401_STABLE"
-    do_upgrade "4.4" "8.1" "MOODLE_404_STABLE"
-    do_upgrade "4.5" "8.3" "MOODLE_405_STABLE"
-
-    info "Exportiere migrierten Dump..."
-    $USE_SUDO_DOCKER docker exec moodle_upgrade_db \
-        mysqldump -uroot -pupgradepass "$OLD_DB_NAME" > db/dump_migriert.sql
-    ok "Migrierter Dump: db/dump_migriert.sql ($(du -sh db/dump_migriert.sql | cut -f1))"
-
-    info "Bereinige temporäre Upgrade-Umgebung..."
-    $USE_SUDO_DOCKER docker stop moodle_upgrade_db
-    $USE_SUDO_DOCKER docker rm moodle_upgrade_db
-    $USE_SUDO_DOCKER docker network rm moodle_upgrade_net 2>/dev/null || true
-    rm -rf "$MOODLEDATA_TMP" /tmp/moodle_upgrade
-
-    # ----
-    step "SCHRITT 10 · Alte Apache-Instanz auf Port 8080"
-    # ----
-    info "Stoppe Apache..."
-    sudo systemctl stop apache2
-
-    info "Ändere Apache-Port 80 → 8080..."
-    sudo sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf
-    for f in /etc/apache2/sites-enabled/*.conf; do
-        [ -f "$f" ] && sudo sed -i 's/<VirtualHost \*:80>/<VirtualHost *:8080>/' "$f"
-    done
-
-    info "Passe alte config.php auf Port 8080 an..."
-    OLD_CFG="$OLD_MOODLE_DIR/config.php"
-    if [ -f "$OLD_CFG" ]; then
-        sudo sed -i "s|'http://localhost'|'http://localhost:8080'|g" "$OLD_CFG"
-        sudo sed -i 's|"http://localhost"|"http://localhost:8080"|g' "$OLD_CFG"
-    fi
-
-    sudo systemctl start apache2
-    ok "Alte Instanz läuft auf Port 8080"
-
-    # ----
-    step "SCHRITT 11 · Neue Docker-Instanz starten & Daten importieren"
-    # ----
-    info "Starte MariaDB..."
-    $USE_SUDO_DOCKER docker compose up -d moodle-db
-    info "Warte auf Healthcheck (40s)..."
-    sleep 40
-
-    info "Importiere migrierten Dump in produktive DB..."
-    $USE_SUDO_DOCKER docker exec -i moodle-db \
-        mariadb -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" < db/dump_migriert.sql
-
-    info "Starte neue Moodle-Instanz..."
-    $USE_SUDO_DOCKER docker compose up -d moodle-new
-
-    info "Kopiere moodledata in Container-Volume..."
-    $USE_SUDO_DOCKER docker cp db/moodledata_backup/. moodle-new:/var/moodledata/
-    $USE_SUDO_DOCKER docker exec moodle-new chown -R www-data:www-data /var/moodledata
-
-    info "Finales Moodle-Upgrade im Container..."
-    $USE_SUDO_DOCKER docker exec -u www-data moodle-new \
-        php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive || true
-    ok "Daten erfolgreich migriert"
-
-    # ----
-    step "SCHRITT 12 · Warnbanner auf alte Instanz"
-    # ----
-    bash scripts/add-banner.sh
-    ok "Warnbanner gesetzt"
+info "Bereinige temporäre Umgebung..."
+docker stop moodle_upgrade_db && docker rm moodle_upgrade_db
+docker network rm moodle_upgrade_net 2>/dev/null || true
+rm -rf "$MOODLEDATA_TMP" /tmp/moodle_upgrade
 
 # -------------------------------------------------------
-# Modus 2: Frischinstall
+step "SCHRITT 9 · Alte Apache-Instanz → Port 8080"
 # -------------------------------------------------------
-else
-    step "SCHRITT 6 · Neue Moodle-Instanz starten (Frischinstall)"
-    $USE_SUDO_DOCKER docker compose up -d
-    ok "Container gestartet"
-    info "Moodle-Ersteinrichtung unter http://localhost aufrufen."
+info "Stoppe Apache..."
+sudo systemctl stop apache2
+
+info "Ändere Port 80 → 8080..."
+sudo sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf
+for f in /etc/apache2/sites-enabled/*.conf; do
+    [ -f "$f" ] && sudo sed -i 's/<VirtualHost \*:80>/<VirtualHost *:8080>/' "$f"
+done
+
+info "Passe alte Moodle config.php an..."
+OLD_CFG="$OLD_MOODLE_DIR/config.php"
+if [ -f "$OLD_CFG" ]; then
+    sudo sed -i "s|'http://localhost'|'http://localhost:8080'|g" "$OLD_CFG"
+    sudo sed -i 's|"http://localhost"|"http://localhost:8080"|g' "$OLD_CFG"
 fi
+
+sudo systemctl start apache2
+ok "Alte Instanz läuft auf Port 8080"
+
+# -------------------------------------------------------
+step "SCHRITT 10 · Neue Docker-Instanz starten"
+# -------------------------------------------------------
+info "Starte MariaDB-Container..."
+docker compose up -d moodle-db
+info "Warte auf Healthcheck (40s)..."
+sleep 40
+
+info "Importiere Daten in produktive DB..."
+docker exec -i moodle-db mariadb \
+    -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" < db/dump_migriert.sql
+
+info "Starte neue Moodle-Instanz..."
+docker compose up -d moodle-new
+
+info "Kopiere moodledata in Container..."
+docker cp db/moodledata_backup/. moodle-new:/var/moodledata/
+docker exec moodle-new chown -R www-data:www-data /var/moodledata
+
+info "Finales CLI-Upgrade..."
+docker exec -u www-data moodle-new \
+    php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive || true
+ok "Neue Instanz läuft auf Port 80"
+
+# -------------------------------------------------------
+step "SCHRITT 11 · Warnbanner auf alte Instanz"
+# -------------------------------------------------------
+bash scripts/add-banner.sh
+ok "Warnbanner gesetzt"
 
 # -------------------------------------------------------
 step "FERTIG"
@@ -350,20 +252,11 @@ step "FERTIG"
 echo ""
 echo -e "${C_GREEN}${C_BOLD}"
 echo "  ╔══════════════════════════════════════════════╗"
-echo "  ║           Setup abgeschlossen! ✅            ║"
+echo "  ║           Migration abgeschlossen! ✅        ║"
 echo "  ╠══════════════════════════════════════════════╣"
-if [ "$MODE" = "1" ]; then
 echo "  ║  Neue Moodle-Instanz:  http://localhost      ║"
 echo "  ║  Alte Moodle-Instanz:  http://localhost:8080 ║"
-else
-echo "  ║  Moodle:               http://localhost      ║"
-fi
 echo "  ╠══════════════════════════════════════════════╣"
 echo "  ║  Nächster Schritt: Testfälle T1–T7 (AP-06)  ║"
 echo "  ╚══════════════════════════════════════════════╝"
 echo -e "${C_NC}"
-
-if [ -n "$USE_SUDO_DOCKER" ]; then
-    echo -e "  ${C_YELLOW}Hinweis: Bitte einmal aus- und einloggen,${C_NC}"
-    echo -e "  ${C_YELLOW}damit Docker ohne sudo nutzbar ist.${C_NC}\n"
-fi
