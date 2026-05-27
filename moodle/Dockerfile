@@ -2,6 +2,7 @@ FROM php:8.3-apache
 
 # -------------------------------------------------------
 # System-Abhängigkeiten + Git installieren
+# (libsoap-dev existiert nicht separat – soap nutzt libxml2-dev)
 # -------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     libpng-dev \
@@ -12,7 +13,6 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libonig-dev \
     libicu-dev \
-    libsoap-dev \
     unzip \
     curl \
     git \
@@ -33,8 +33,6 @@ RUN apt-get update && apt-get install -y \
 
 # -------------------------------------------------------
 # Moodle via Git klonen (offizielles Moodle-Repository)
-# Branch MOODLE_500_STABLE = Version 5.0 (kostenlos, kein Download nötig)
-# Alternative: MOODLE_405_STABLE für Version 4.5 LTS
 # -------------------------------------------------------
 RUN git clone --depth 1 \
         --branch MOODLE_405_STABLE \
@@ -43,14 +41,14 @@ RUN git clone --depth 1 \
     && chown -R www-data:www-data /var/www/html/moodle
 
 # -------------------------------------------------------
-# moodledata-Verzeichnis (FA-02 / Konzept K2)
+# moodledata-Verzeichnis
 # -------------------------------------------------------
 RUN mkdir -p /var/moodledata \
     && chown -R www-data:www-data /var/moodledata \
     && chmod 0777 /var/moodledata
 
 # -------------------------------------------------------
-# Apache: mod_rewrite aktivieren + VirtualHost setzen
+# Apache konfigurieren
 # -------------------------------------------------------
 RUN a2enmod rewrite
 COPY moodle.conf /etc/apache2/sites-available/000-default.conf
