@@ -124,7 +124,7 @@ step "SCHRITT 3 · Konfiguration (.env)"
 
 if [ -f ".env" ]; then
     ok ".env bereits vorhanden – wird verwendet."
-    export $(grep -v '^#' .env | xargs)
+    set -a; source .env; set +a
 else
     echo ""
     ask "Bitte Datenbankpasswörter festlegen:"
@@ -187,7 +187,7 @@ if [ "$MODE" = "1" ]; then
 
     ask "Pfad zum moodledata-Verzeichnis?"
     read -p "  [Standard: /var/moodledata]: " INPUT_MOODLE_DATA
-    OLD_MOODLE_DATA="${INPUT_MOODLE_DATA:-/var/moodledata}"
+    OLD_MOODLE_DATA="${INPUT_MOODLE_DATA:-/var/www/moodledata}"
 
     ask "Name der alten Moodle-Datenbank?"
     read -p "  [Standard: moodle]: " INPUT_OLD_DB
