@@ -49,8 +49,7 @@
 ├── scripts
 │   ├── add-banner.sh
 │   ├── config_migration.php
-│   ├── migration.sh
-│   └── test
+│   └── migration.sh
 ├── setup.sh
 └── {moodle,db,scripts,docs}
     └── test
