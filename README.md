@@ -44,6 +44,8 @@
 │       └── README.md
 ├── moodle
 │   └── test
+├── scripts
+│   └── test
 └── setup.sh
 ```
 <!-- TREE_END -->
