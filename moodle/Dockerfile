@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
 # Moodle via Git klonen (offizielles Moodle-Repository)
 # -------------------------------------------------------
 RUN git clone --depth 1 \
-        --branch MOODLE_405_STABLE \
+        --branch MOODLE_502_STABLE \
         https://github.com/moodle/moodle.git \
         /var/www/html/moodle \
     && chown -R www-data:www-data /var/www/html/moodle
