@@ -1,0 +1,13 @@
+# Credentials – NIE committen (FA-04 / R4)
+.env
+
+# Datenbank-Dumps (können gross sein)
+db/*.sql
+db/moodledata_backup/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp

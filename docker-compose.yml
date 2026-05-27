@@ -1,0 +1,63 @@
+services:
+
+  # -------------------------------------------------------
+  # MariaDB Datenbank-Container
+  # -------------------------------------------------------
+  moodle-db:
+    image: mariadb:11
+    container_name: moodle-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MARIADB_DATABASE:      ${DB_NAME}
+      MARIADB_USER:          ${DB_USER}
+      MARIADB_PASSWORD:      ${DB_PASS}
+    volumes:
+      - moodle_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout:  5s
+      retries:  5
+      start_period: 30s
+    networks:
+      - moodle-net
+
+  # -------------------------------------------------------
+  # Neue Moodle-Instanz (FA-01: selbst geschriebenes Image)
+  # Erreichbar unter http://localhost (Port 80)
+  # -------------------------------------------------------
+  moodle-new:
+    build:
+      context: ./moodle
+      dockerfile: Dockerfile
+    container_name: moodle-new
+    restart: unless-stopped
+    depends_on:
+      moodle-db:
+        condition: service_healthy
+    environment:
+      MOODLE_DB_HOST: moodle-db
+      MOODLE_DB_NAME: ${DB_NAME}
+      MOODLE_DB_USER: ${DB_USER}
+      MOODLE_DB_PASS: ${DB_PASS}
+    volumes:
+      - moodle_data:/var/moodledata
+    ports:
+      - "80:80"
+    networks:
+      - moodle-net
+
+# -------------------------------------------------------
+# Named Volumes (FA-02: Daten persistent)
+# -------------------------------------------------------
+volumes:
+  moodle_db_data:
+  moodle_data:
+
+# -------------------------------------------------------
+# Netzwerk
+# -------------------------------------------------------
+networks:
+  moodle-net:
+    driver: bridge
