@@ -56,6 +56,26 @@
 
 > Konfigurationsdateien folgen in der Realisierungsphase.
 
+
+## ▶️ Konfiguration Startbefehl
+
+> **Voraussetzung:** Ubuntu 22.04 LTS VM · sudo-Rechte · Internetverbindung
+
+```bash
+curl -fsSL https://TOKEN@raw.githubusercontent.com/Soluk-GBS/ProjektM158-169/main/setup.sh | bash
+```
+
+Das Script läuft ~15–20 Minuten automatisch durch.  
+Kein weiterer Eingriff nötig.
+
+### Nach dem Setup im Browser testen
+
+| | |
+|---|---|
+| 🆕 Neue Instanz | `http://localhost` |
+| 🕰️ Alte Instanz | `http://localhost:8080` |
+| 🔑 Login | Benutzer: `vmadmin` · Passwort: `Riethuesli>12345` |
+
 ---
 
 <div align="center">
