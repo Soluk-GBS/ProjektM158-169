@@ -32,15 +32,17 @@
 ```
 .
 ├── README.md
-└── miniprojekt
-    ├── Leandro's Miniprojekt
-    │   ├── README.md
-    │   └── miniprojekt.zip
-    ├── Luka's Miniprojekt
-    │   ├── README.md
-    │   └── m169-miniprojekt.zip
-    └── Stefan's Miniprojekt
-        └── README.md
+├── docker-compose.yml
+├── miniprojekt
+│   ├── Leandro's Miniprojekt
+│   │   ├── README.md
+│   │   └── miniprojekt.zip
+│   ├── Luka's Miniprojekt
+│   │   ├── README.md
+│   │   └── m169-miniprojekt.zip
+│   └── Stefan's Miniprojekt
+│       └── README.md
+└── setup.sh
 ```
 <!-- TREE_END -->
 
