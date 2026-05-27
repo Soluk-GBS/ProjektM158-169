@@ -50,9 +50,7 @@
 │   ├── add-banner.sh
 │   ├── config_migration.php
 │   └── migration.sh
-├── setup.sh
-└── {moodle,db,scripts,docs}
-    └── test
+└── setup.sh
 ```
 <!-- TREE_END -->
 
