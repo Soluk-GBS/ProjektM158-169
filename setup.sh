@@ -270,6 +270,11 @@ docker exec -u www-data moodle-new \
     php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive || true
 ok "Neue Instanz → Port 80"
 
+# Banner aus neuer DB entfernen (wurde mit Dump übernommen)
+info "Entferne Banner aus neuer Instanz..."
+sleep 5
+docker exec -i moodle-db mariadb -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "DELETE FROM mdl_config WHERE name='additionalhtmltopofbody';" 2>/dev/null || true
+
 # -------------------------------------------------------
 step "SCHRITT 11 · Warnbanner"
 # -------------------------------------------------------
