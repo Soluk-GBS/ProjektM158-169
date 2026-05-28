@@ -61,12 +61,12 @@
 
 **Schritt 1 – Token einrichten (einmalig):**
 ```bash
-git config --global url."https://Soluk-GBS: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@github.com/Soluk-GBS/ProjektM158-169.git".insteadOf "https://github.com/"
+git config --global url."https://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@github.com/Soluk-GBS/ProjektM158-169.git".insteadOf "https://github.com/"
 ```
 
 **Schritt 2 – Migration starten:**
 ```bash
-curl -fsSL https://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@raw.githubusercontent.com/Soluk-GBS/ProjektM158-169/main/setup.sh | bash
+curl -fsSL https://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@github.com/Soluk-GBS/ProjektM158-169/main/setup.sh | bash
 ```
 
 Das Script läuft ~15–20 Minuten automatisch durch. Kein weiterer Eingriff nötig.
