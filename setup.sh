@@ -74,6 +74,9 @@ if [ ! -f /etc/docker/daemon.json ] || ! grep -q "8.8.8.8" /etc/docker/daemon.js
     echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | S tee /etc/docker/daemon.json > /dev/null
     S systemctl restart docker 2>/dev/null || true
     sleep 5
+    # Sicherstellen dass Docker danach läuft
+    S systemctl start docker 2>/dev/null || true
+    sleep 3
     ok "Docker DNS gesetzt"
 else
     ok "Docker DNS bereits konfiguriert"
