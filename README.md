@@ -49,7 +49,8 @@
 ├── scripts
 │   ├── add-banner.sh
 │   ├── config_migration.php
-│   └── migration.sh
+│   ├── migration.sh
+│   └── recover_upgrade.sh
 └── setup.sh
 ```
 <!-- TREE_END -->
