@@ -184,6 +184,7 @@ ok "Dump importiert"
 do_upgrade() {
     local VERSION=$1 PHP=$2 TGZ_URL=$3
     info "Upgrade → Moodle $VERSION..."
+    set +e  # Warnungen sollen Script nicht abbrechen
     S rm -rf /tmp/moodle_upgrade
     mkdir -p /tmp/moodle_upgrade
     curl -fsSL "$TGZ_URL" | tar -xz -C /tmp/moodle_upgrade --strip-components=1
@@ -200,6 +201,7 @@ do_upgrade() {
         php:"$PHP"-apache \
         bash -c "apt-get update -qq && apt-get install -y -qq libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libxml2-dev libcurl4-openssl-dev libonig-dev libicu-dev > /dev/null 2>&1 && docker-php-ext-configure gd --with-freetype --with-jpeg > /dev/null 2>&1 && docker-php-ext-install -j4 gd intl mysqli pdo_mysql zip xml curl mbstring soap opcache > /dev/null 2>&1 && echo max_input_vars=5000 >> /usr/local/etc/php/php.ini && chown -R www-data:www-data /var/moodledata && su -s /bin/bash www-data -c \"php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive\""
     S rm -rf /tmp/moodle_upgrade   # ← sudo rm, da Docker root-Dateien erstellt
+    set -e  # wieder aktivieren
     ok "Moodle $VERSION ✔"
 }
 
