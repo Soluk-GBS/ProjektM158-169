@@ -182,11 +182,11 @@ docker exec -i moodle_upgrade_db mariadb \
 ok "Dump importiert"
 
 do_upgrade() {
-    local VERSION=$1 PHP=$2 BRANCH=$3
+    local VERSION=$1 PHP=$2 TGZ_URL=$3
     info "Upgrade → Moodle $VERSION..."
     S rm -rf /tmp/moodle_upgrade
-    git clone --depth 1 --branch "$BRANCH" \
-        https://github.com/moodle/moodle.git /tmp/moodle_upgrade 2>/dev/null
+    mkdir -p /tmp/moodle_upgrade
+    curl -fsSL "$TGZ_URL" | tar -xz -C /tmp/moodle_upgrade --strip-components=1
     cp scripts/config_migration.php /tmp/moodle_upgrade/config.php
     S chmod -R 777 /tmp/moodle_upgrade
     docker run --rm \
@@ -204,10 +204,10 @@ do_upgrade() {
     ok "Moodle $VERSION ✔"
 }
 
-do_upgrade "4.1" "8.0" "MOODLE_401_STABLE"
-do_upgrade "4.4" "8.1" "MOODLE_404_STABLE"
-do_upgrade "4.5" "8.3" "MOODLE_405_STABLE"
-do_upgrade "5.0" "8.3" "MOODLE_500_STABLE"
+do_upgrade "4.1" "8.0" "https://packaging.moodle.org/stable401/moodle-latest-401.tgz"
+do_upgrade "4.4" "8.1" "https://packaging.moodle.org/stable404/moodle-latest-404.tgz"
+do_upgrade "4.5" "8.3" "https://packaging.moodle.org/stable405/moodle-latest-405.tgz"
+do_upgrade "5.0" "8.3" "https://packaging.moodle.org/stable500/moodle-latest-500.tgz"
 
 
 info "Exportiere migrierten Dump..."
@@ -260,7 +260,7 @@ ok "Warnbanner gesetzt"
 echo ""
 echo -e "${C_GREEN}${C_BOLD}"
 echo "  ╔══════════════════════════════════════════════╗"
-echo "  ║           Migration abgeschlossen!           ║"
+echo "  ║           Migration abgeschlossen! ✅        ║"
 echo "  ╠══════════════════════════════════════════════╣"
 echo "  ║  Neue Moodle-Instanz:  http://localhost      ║"
 echo "  ║  Alte Moodle-Instanz:  http://localhost:8080 ║"

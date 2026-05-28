@@ -1,8 +1,7 @@
 FROM php:8.3-apache
 
 # -------------------------------------------------------
-# System-Abhängigkeiten + Git installieren
-# (libsoap-dev existiert nicht separat – soap nutzt libxml2-dev)
+# System-Abhängigkeiten installieren
 # -------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     libpng-dev \
@@ -32,12 +31,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # -------------------------------------------------------
-# Moodle via Git klonen (offizielles Moodle-Repository)
+# Moodle als ZIP herunterladen (viel schneller als git clone)
 # -------------------------------------------------------
-RUN git clone --depth 1 \
-        --branch MOODLE_500_STABLE \
-        https://github.com/moodle/moodle.git \
-        /var/www/html/moodle \
+RUN curl -fsSL "https://packaging.moodle.org/stable500/moodle-latest-500.tgz" \
+        -o /tmp/moodle.tgz \
+    && tar -xzf /tmp/moodle.tgz -C /var/www/html/ \
+    && rm /tmp/moodle.tgz \
     && chown -R www-data:www-data /var/www/html/moodle
 
 # -------------------------------------------------------
