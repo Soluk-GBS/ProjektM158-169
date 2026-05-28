@@ -1,62 +1,21 @@
 <div align="center">
 
-![header](https://capsule-render.vercel.app/api?type=waving&color=3B82F6&height=120&width=1500&section=header)
+# Moodle Migration
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=3B82F6&center=true&vCenter=true&width=600&lines=ProjektM158-169;Moodle+Migration+%F0%9F%90%B3;GBS+St.Gallen)](https://git.io/typing-svg)
+**CloudForge AG** · Modul 158/169 · GBS St.Gallen · 2026
 
-</div>
-
-<div align="center">
-
-> Migration einer veralteten Moodle-Instanz auf die aktuelle Version als Docker-Container.
-
-**Modul 158/169 – GBS St.Gallen**
-
-</div>
-
----
-
-## 👥 Team
-
-| Name | Rolle |
+| | |
 |---|---|
-| [Luka Sola](https://github.com/luka-sola) | Projektleiter |
-| [Leandro Graf](https://github.com/Leandro-gbs) | Protokollführer |
-| [Stefan Kauflin](https://github.com/MrKringel76)| Technischer Analyst |
+| **Team** | Luka Aurelius Sola (PL) · Leandro Graf (PR) · Stefan Kauflin (TA) |
+| **Auftraggeber** | Herr Oliver Lux · GBS St.Gallen |
+| **Methode** | HERMES |
+| **Ziel** | Moodle 3.10 → 5.0 als Docker-Container |
+
+</div>
 
 ---
 
-## 📁 Inhalt
-
-<!-- TREE_START -->
-```
-.
-├── README.md
-├── docker-compose.yml
-├── miniprojekt
-│   ├── Leandro's Miniprojekt
-│   │   ├── README.md
-│   │   └── miniprojekt.zip
-│   ├── Luka's Miniprojekt
-│   │   ├── README.md
-│   │   └── m169-miniprojekt.zip
-│   └── Stefan's Miniprojekt
-│       └── README.md
-├── moodle
-│   ├── Dockerfile
-│   ├── config.php
-│   └── moodle.conf
-├── scripts
-│   ├── add-banner.sh
-│   ├── config_migration.php
-│   ├── migration.sh
-│   └── recover_upgrade.sh
-└── setup.sh
-```
-<!-- TREE_END -->
-
-
-## ▶️ Abnahme – Anleitung für Herrn Lux
+## Abnahme – Anleitung für Herrn Lux
 
 > **Voraussetzung:** Ubuntu 22.04 LTS VM · sudo-Rechte · Internetverbindung
 
@@ -70,25 +29,56 @@ git config --global url."https://x:github_pat_11BXR67JQ0GfXryVdh3x9Z_1brkvMuoOsx
 git clone https://x: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@github.com/Soluk-GBS/ProjektM158-169.git && cd ProjektM158-169 && bash setup.sh
 ```
 
-Das Script läuft ~15–20 Minuten automatisch durch. Kein weiterer Eingriff nötig.
+> Das Script fragt einmalig nach dem **sudo-Passwort** der VM (vmadmin).  
+> Das Passwort ist: `Riethuesli>12345`  
+> Das Script läuft danach ~15–20 Minuten vollautomatisch durch.
 
-### Nach dem Setup im Browser testen
+**Schritt 3 – Web-Upgrade abschliessen:**
+
+Nach dem Script im Browser `http://localhost` öffnen.  
+Es erscheint eine Upgrade-Seite — dort auf **Continue** klicken und den Anweisungen folgen bis Moodle fertig ist.
+
+---
+
+## Nach dem Setup im Browser testen
 
 | | |
 |---|---|
 | Neue Instanz | `http://localhost` |
-| Alte Instanz | `http://localhost:8080` |
+| Alte Instanz | `http://localhost:8080` (mit Warnbanner) |
 | Login | Benutzer: `vmadmin` · Passwort: `Riethuesli>12345` |
 
 ---
 
-<div align="center">
+## Testfälle T1–T7
 
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Moodle](https://img.shields.io/badge/Moodle-F98012?style=for-the-badge&logo=moodle&logoColor=white)
-![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+| Nr. | Test | Erwartetes Ergebnis |
+|---|---|---|
+| T1 | `http://localhost` aufrufen | Moodle 5.0 Startseite lädt |
+| T2 | `http://localhost:8080` aufrufen | Alte Startseite + roter Warnbanner |
+| T3 | Beide URLs gleichzeitig öffnen | Beide antworten ohne Konflikt |
+| T4 | Mit `vmadmin` einloggen | Login erfolgreich |
+| T5 | Kurse prüfen | Modul 305 + Modul 301 vorhanden |
+| T6 | `docker compose ps` im Terminal | Beide Container laufen (Up/healthy) |
+| T7 | GitHub Repository prüfen | Alle Dateien vorhanden, keine Passwörter |
 
-![footer](https://capsule-render.vercel.app/api?type=waving&color=3B82F6&height=80&width=1500&section=footer)
+---
 
-</div>
+## Projektstruktur
+
+```
+ProjektM158-169/
+├── moodle/
+│   ├── Dockerfile           ← eigenes Image (FA-01)
+│   ├── moodle.conf          ← Apache VirtualHost
+│   └── config.php           ← Moodle-Konfiguration
+├── scripts/
+│   ├── setup.sh             ← Haupt-Script
+│   ├── add-banner.sh        ← Warnbanner (NFA-02)
+│   ├── recover_upgrade.sh   ← Notfall-Script falls DB-Upgrade fehlschlägt
+│   └── config_migration.php
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+└── README.md
+```
