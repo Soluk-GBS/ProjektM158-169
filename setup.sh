@@ -67,18 +67,21 @@ fi
 # -------------------------------------------------------
 step "SCHRITT 0.5 · Docker DNS-Fix"
 # -------------------------------------------------------
-# Stellt sicher dass Docker-Container Internet haben (deb.debian.org erreichbar)
 if [ ! -f /etc/docker/daemon.json ] || ! grep -q "8.8.8.8" /etc/docker/daemon.json 2>/dev/null; then
     info "Setze Docker DNS auf 8.8.8.8..."
     S mkdir -p /etc/docker
     echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | S tee /etc/docker/daemon.json > /dev/null
     S systemctl restart docker 2>/dev/null || true
-    sleep 5
-    # Sicherstellen dass Docker danach läuft
-    S systemctl start docker 2>/dev/null || true
-    sleep 3
+    # Warten bis Docker wirklich läuft
+    for i in $(seq 1 15); do
+        docker info > /dev/null 2>&1 && break
+        sleep 2
+    done
     ok "Docker DNS gesetzt"
 else
+    # Docker sicherstellen dass er läuft
+    docker info > /dev/null 2>&1 || S systemctl start docker 2>/dev/null || true
+    sleep 3
     ok "Docker DNS bereits konfiguriert"
 fi
 
