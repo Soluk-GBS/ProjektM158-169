@@ -208,7 +208,7 @@ do_upgrade "4.1" "8.0" "MOODLE_401_STABLE"
 do_upgrade "4.4" "8.1" "MOODLE_404_STABLE"
 do_upgrade "4.5" "8.3" "MOODLE_405_STABLE"
 do_upgrade "5.0" "8.3" "MOODLE_500_STABLE"
-do_upgrade "5.2" "8.3" "MOODLE_502_STABLE"
+
 
 info "Exportiere migrierten Dump..."
 docker exec moodle_upgrade_db mysqldump \
