@@ -54,27 +54,30 @@
 ```
 <!-- TREE_END -->
 
-> Konfigurationsdateien folgen in der Realisierungsphase.
 
-
-## ▶️ Konfiguration Startbefehl
+## ▶️ Abnahme – Anleitung für Herrn Lux
 
 > **Voraussetzung:** Ubuntu 22.04 LTS VM · sudo-Rechte · Internetverbindung
 
+**Schritt 1 – Token einrichten (einmalig):**
 ```bash
-curl -fsSL https://TOKEN@raw.githubusercontent.com/Soluk-GBS/ProjektM158-169/main/setup.sh | bash
+git config --global url."https://Soluk-GBS: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@github.com/Soluk-GBS/ProjektM158-169.git".insteadOf "https://github.com/"
 ```
 
-Das Script läuft ~15–20 Minuten automatisch durch.  
-Kein weiterer Eingriff nötig.
+**Schritt 2 – Migration starten:**
+```bash
+curl -fsSL https://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@raw.githubusercontent.com/Soluk-GBS/ProjektM158-169/main/setup.sh | bash
+```
+
+Das Script läuft ~15–20 Minuten automatisch durch. Kein weiterer Eingriff nötig.
 
 ### Nach dem Setup im Browser testen
 
 | | |
 |---|---|
-| 🆕 Neue Instanz | `http://localhost` |
-| 🕰️ Alte Instanz | `http://localhost:8080` |
-| 🔑 Login | Benutzer: `vmadmin` · Passwort: `Riethuesli>12345` |
+| Neue Instanz | `http://localhost` |
+| Alte Instanz | `http://localhost:8080` |
+| Login | Benutzer: `vmadmin` · Passwort: `Riethuesli>12345` |
 
 ---
 
