@@ -198,7 +198,7 @@ do_upgrade() {
         -e MOODLE_DB_USER=moodle \
         -e MOODLE_DB_PASS=upgradepass \
         php:"$PHP"-apache \
-        bash -c "chown -R www-data:www-data /var/moodledata && su -s /bin/bash www-data -c \"php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive\""
+        bash -c "docker-php-ext-install mysqli pdo_mysql > /dev/null 2>&1; chown -R www-data:www-data /var/moodledata && su -s /bin/bash www-data -c \"php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive\""
     S rm -rf /tmp/moodle_upgrade   # ← sudo rm, da Docker root-Dateien erstellt
     ok "Moodle $VERSION ✔"
 }
