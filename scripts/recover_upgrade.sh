@@ -1,6 +1,8 @@
 #!/bin/bash
 # =======================================================
 # recover_upgrade.sh – DB-Upgrade direkt gegen laufende DB
+# Ausführen wenn http://localhost zeigt:
+# "version 4.2.3 is required and you are running 3.10.11"
 # =======================================================
 set -e
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
@@ -9,11 +11,9 @@ info() { echo -e "  ${YELLOW}→ $1${NC}"; }
 
 set -a; source .env; set +a
 
-# Netzwerk ermitteln
 NETWORK=$(docker inspect moodle-new --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null | head -1)
 info "Netzwerk: $NETWORK"
 
-# moodledata-Rechte im Volume fixen
 info "Fixe moodledata-Berechtigungen..."
 docker exec moodle-new chown -R www-data:www-data /var/moodledata
 docker exec moodle-new chmod -R 777 /var/moodledata
@@ -27,7 +27,6 @@ do_upgrade() {
     tar -xzf /tmp/mu.tgz -C /tmp/mu --strip-components=1
     cp scripts/config_migration.php /tmp/mu/config.php
     chmod -R 777 /tmp/mu
-
     set +e
     docker run --rm \
         --network "$NETWORK" \
@@ -38,7 +37,7 @@ do_upgrade() {
         -e MOODLE_DB_USER="$DB_USER" \
         -e MOODLE_DB_PASS="$DB_PASS" \
         php:"$PHP"-apache \
-        bash -c "docker-php-ext-install mysqli pdo_mysql intl zip mbstring > /dev/null 2>&1; echo max_input_vars=5000 >> /usr/local/etc/php/php.ini; chown -R www-data:www-data /var/moodledata; su -s /bin/bash www-data -c 'php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive'"
+        bash -c "apt-get update -qq && apt-get install -y -qq libpng-dev libjpeg-dev libzip-dev libicu-dev libfreetype6-dev libxml2-dev > /dev/null 2>&1; docker-php-ext-configure gd --with-freetype --with-jpeg > /dev/null 2>&1; docker-php-ext-install mysqli pdo_mysql zip gd intl mbstring > /dev/null 2>&1; echo max_input_vars=5000 >> /usr/local/etc/php/php.ini; chmod -R 777 /var/moodledata; chown -R www-data:www-data /var/moodledata; su -s /bin/bash www-data -c 'php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive' 2>&1 | tail -3"
     set -e
     sudo rm -rf /tmp/mu /tmp/mu.tgz
     ok "Moodle $VERSION ✔"
@@ -52,4 +51,4 @@ info "Finales Upgrade in moodle-new Container..."
 docker exec -u www-data moodle-new \
     php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive || true
 
-ok "Fertig! http://localhost neu laden."
+ok "Fertig! http://localhost im Browser öffnen und Continue klicken."
