@@ -65,6 +65,21 @@ else
 fi
 
 # -------------------------------------------------------
+step "SCHRITT 0.5 · Docker DNS-Fix"
+# -------------------------------------------------------
+# Stellt sicher dass Docker-Container Internet haben (deb.debian.org erreichbar)
+if [ ! -f /etc/docker/daemon.json ] || ! grep -q "8.8.8.8" /etc/docker/daemon.json 2>/dev/null; then
+    info "Setze Docker DNS auf 8.8.8.8..."
+    S mkdir -p /etc/docker
+    echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | S tee /etc/docker/daemon.json > /dev/null
+    S systemctl restart docker
+    sleep 3
+    ok "Docker DNS gesetzt"
+else
+    ok "Docker DNS bereits konfiguriert"
+fi
+
+# -------------------------------------------------------
 step "SCHRITT 1 · Abhängigkeiten"
 # -------------------------------------------------------
 command -v git    &>/dev/null || { S apt-get update -qq && S apt-get install -y -qq git; }
@@ -183,25 +198,29 @@ ok "Dump importiert"
 
 do_upgrade() {
     local VERSION=$1 PHP=$2 TGZ_URL=$3
-    info "Upgrade → Moodle $VERSION..."
-    set +e  # Warnungen sollen Script nicht abbrechen
+    info "Upgrade → Moodle $VERSION (Download auf Host)..."
+    # ZIP auf dem Host herunterladen (dort funktioniert DNS)
     S rm -rf /tmp/moodle_upgrade
     mkdir -p /tmp/moodle_upgrade
-    curl -fsSL "$TGZ_URL" | tar -xz -C /tmp/moodle_upgrade --strip-components=1
+    info "Lade Moodle $VERSION herunter..."
+    curl -fsSL --retry 3 "$TGZ_URL" -o /tmp/moodle_upgrade.tgz || {
+        err "Download von $TGZ_URL fehlgeschlagen"
+    }
+    tar -xzf /tmp/moodle_upgrade.tgz -C /tmp/moodle_upgrade --strip-components=1
+    rm -f /tmp/moodle_upgrade.tgz
     cp scripts/config_migration.php /tmp/moodle_upgrade/config.php
     S chmod -R 777 /tmp/moodle_upgrade
-    docker run --rm \
-        --network moodle_upgrade_net \
-        -v /tmp/moodle_upgrade:/var/www/html/moodle \
-        -v "$MOODLEDATA_TMP":/var/moodledata \
-        -e MOODLE_DB_HOST=moodle_upgrade_db \
-        -e MOODLE_DB_NAME="$OLD_DB_NAME" \
-        -e MOODLE_DB_USER=moodle \
-        -e MOODLE_DB_PASS=upgradepass \
-        php:"$PHP"-apache \
-        bash -c "apt-get update -qq && apt-get install -y -qq libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libxml2-dev libcurl4-openssl-dev libonig-dev libicu-dev > /dev/null 2>&1 && docker-php-ext-configure gd --with-freetype --with-jpeg > /dev/null 2>&1 && docker-php-ext-install -j4 gd intl mysqli pdo_mysql zip xml curl mbstring soap opcache > /dev/null 2>&1 && echo max_input_vars=5000 >> /usr/local/etc/php/php.ini && chown -R www-data:www-data /var/moodledata && su -s /bin/bash www-data -c \"php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive\""
-    S rm -rf /tmp/moodle_upgrade   # ← sudo rm, da Docker root-Dateien erstellt
-    set -e  # wieder aktivieren
+
+    # PHP-Image vorab pullen mit Retry
+    info "Lade PHP-Image..."
+    for i in 1 2 3; do
+        docker pull php:"$PHP"-apache && break || { info "Retry $i..."; sleep 10; }
+    done
+
+    set +e  # Warnungen sollen Script nicht abbrechen
+    docker run --rm         --network moodle_upgrade_net         -v /tmp/moodle_upgrade:/var/www/html/moodle         -v "$MOODLEDATA_TMP":/var/moodledata         -e MOODLE_DB_HOST=moodle_upgrade_db         -e MOODLE_DB_NAME="$OLD_DB_NAME"         -e MOODLE_DB_USER=moodle         -e MOODLE_DB_PASS=upgradepass         php:"$PHP"-apache         bash -c "docker-php-ext-install mysqli pdo_mysql intl zip mbstring > /dev/null 2>&1; echo max_input_vars=5000 >> /usr/local/etc/php/php.ini; chown -R www-data:www-data /var/moodledata && su -s /bin/bash www-data -c 'php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive'"
+    set -e
+    S rm -rf /tmp/moodle_upgrade
     ok "Moodle $VERSION ✔"
 }
 

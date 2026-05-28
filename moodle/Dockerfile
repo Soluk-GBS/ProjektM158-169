@@ -2,8 +2,10 @@ FROM php:8.3-apache
 
 # -------------------------------------------------------
 # System-Abhängigkeiten installieren
+# DNS-Fix: Google DNS explizit nutzen
 # -------------------------------------------------------
-RUN apt-get update && apt-get install -y \
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf \
+    && apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -14,7 +16,6 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     unzip \
     curl \
-    git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         gd \
@@ -31,7 +32,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # -------------------------------------------------------
-# Moodle als ZIP herunterladen (viel schneller als git clone)
+# Moodle als ZIP herunterladen
 # -------------------------------------------------------
 RUN curl -fsSL "https://packaging.moodle.org/stable500/moodle-latest-500.tgz" \
         -o /tmp/moodle.tgz \
