@@ -218,7 +218,7 @@ do_upgrade() {
     done
 
     set +e  # Warnungen sollen Script nicht abbrechen
-    docker run --rm         --network moodle_upgrade_net         -v /tmp/moodle_upgrade:/var/www/html/moodle         -v "$MOODLEDATA_TMP":/var/moodledata         -e MOODLE_DB_HOST=moodle_upgrade_db         -e MOODLE_DB_NAME="$OLD_DB_NAME"         -e MOODLE_DB_USER=moodle         -e MOODLE_DB_PASS=upgradepass         php:"$PHP"-apache         bash -c "docker-php-ext-install mysqli pdo_mysql intl zip mbstring > /dev/null 2>&1; echo max_input_vars=5000 >> /usr/local/etc/php/php.ini; chown -R www-data:www-data /var/moodledata && su -s /bin/bash www-data -c 'php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive'"
+    docker run --rm         --network moodle_upgrade_net         -v /tmp/moodle_upgrade:/var/www/html/moodle         -v "$MOODLEDATA_TMP":/var/moodledata         -e MOODLE_DB_HOST=moodle_upgrade_db         -e MOODLE_DB_NAME="$OLD_DB_NAME"         -e MOODLE_DB_USER=moodle         -e MOODLE_DB_PASS=upgradepass         php:"$PHP"-apache         bash -c "docker-php-ext-install mysqli pdo_mysql intl zip mbstring > /dev/null 2>&1; echo max_input_vars=5000 >> /usr/local/etc/php/php.ini; chmod -R 777 /var/moodledata; chown -R www-data:www-data /var/moodledata && su -s /bin/bash www-data -c 'php /var/www/html/moodle/admin/cli/upgrade.php --non-interactive'"
     set -e
     S rm -rf /tmp/moodle_upgrade
     ok "Moodle $VERSION ✔"
