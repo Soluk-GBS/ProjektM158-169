@@ -65,30 +65,15 @@ else
 fi
 
 # -------------------------------------------------------
-step "SCHRITT 0.5 · Docker DNS-Fix & Berechtigungen"
+step "SCHRITT 0.5 · Docker prüfen"
 # -------------------------------------------------------
-# User zur docker-Gruppe hinzufügen (kein sudo für docker nötig)
-S usermod -aG docker "$USER" 2>/dev/null || true
-
-# Docker DNS setzen
-S mkdir -p /etc/docker
-echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | S tee /etc/docker/daemon.json > /dev/null
-
-# Docker neu starten und warten
-S systemctl restart docker 2>/dev/null || true
-sleep 8
-
-# Docker Socket-Rechte setzen damit aktueller User Zugriff hat
+# Docker Socket-Rechte setzen
 S chmod 666 /var/run/docker.sock 2>/dev/null || true
-
-# Prüfen ob Docker läuft
-for i in $(seq 1 10); do
-    docker info > /dev/null 2>&1 && break || true
-    S systemctl start docker 2>/dev/null || true
-    sleep 3
-done
-docker info > /dev/null 2>&1 || err "Docker konnte nicht gestartet werden."
-ok "Docker DNS gesetzt und läuft"
+# Sicherstellen dass Docker läuft
+docker info > /dev/null 2>&1 || S systemctl start docker 2>/dev/null || true
+sleep 2
+docker info > /dev/null 2>&1 || err "Docker läuft nicht. Bitte 'sudo systemctl start docker' manuell ausführen."
+ok "Docker läuft"
 
 # -------------------------------------------------------
 step "SCHRITT 1 · Abhängigkeiten"
