@@ -2,10 +2,8 @@ FROM php:8.3-apache
 
 # -------------------------------------------------------
 # System-Abhängigkeiten installieren
-# DNS-Fix: Google DNS explizit nutzen
 # -------------------------------------------------------
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf \
-    && apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \

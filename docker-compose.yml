@@ -43,6 +43,9 @@ services:
       MOODLE_DB_PASS: ${DB_PASS}
     volumes:
       - moodle_data:/var/moodledata
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "80:80"
     networks:
