@@ -65,25 +65,30 @@ else
 fi
 
 # -------------------------------------------------------
-step "SCHRITT 0.5 · Docker DNS-Fix"
+step "SCHRITT 0.5 · Docker DNS-Fix & Berechtigungen"
 # -------------------------------------------------------
-if [ ! -f /etc/docker/daemon.json ] || ! grep -q "8.8.8.8" /etc/docker/daemon.json 2>/dev/null; then
-    info "Setze Docker DNS auf 8.8.8.8..."
-    S mkdir -p /etc/docker
-    echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | S tee /etc/docker/daemon.json > /dev/null
-    S systemctl restart docker 2>/dev/null || true
-    # Warten bis Docker wirklich läuft
-    for i in $(seq 1 15); do
-        docker info > /dev/null 2>&1 && break
-        sleep 2
-    done
-    ok "Docker DNS gesetzt"
-else
-    # Docker sicherstellen dass er läuft
-    docker info > /dev/null 2>&1 || S systemctl start docker 2>/dev/null || true
+# User zur docker-Gruppe hinzufügen (kein sudo für docker nötig)
+S usermod -aG docker "$USER" 2>/dev/null || true
+
+# Docker DNS setzen
+S mkdir -p /etc/docker
+echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | S tee /etc/docker/daemon.json > /dev/null
+
+# Docker neu starten und warten
+S systemctl restart docker 2>/dev/null || true
+sleep 8
+
+# Docker Socket-Rechte setzen damit aktueller User Zugriff hat
+S chmod 666 /var/run/docker.sock 2>/dev/null || true
+
+# Prüfen ob Docker läuft
+for i in $(seq 1 10); do
+    docker info > /dev/null 2>&1 && break || true
+    S systemctl start docker 2>/dev/null || true
     sleep 3
-    ok "Docker DNS bereits konfiguriert"
-fi
+done
+docker info > /dev/null 2>&1 || err "Docker konnte nicht gestartet werden."
+ok "Docker DNS gesetzt und läuft"
 
 # -------------------------------------------------------
 step "SCHRITT 1 · Abhängigkeiten"
